@@ -12,6 +12,9 @@ import { ReactComponent as AirFlowIcon } from './images/airFlow.svg';
 import { ReactComponent as RainIcon } from './images/rain.svg';
 import { ReactComponent as RefreshIcon } from './images/refresh.svg';
 
+//跨瀏覽器處理工具(時間格式)
+import dayjs from 'dayjs';
+
 const theme = {
   light: {
     backgroundColor: '#ededed',
@@ -38,6 +41,7 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: system-ui;
 `;
 
 const WeatherCard = styled.div`
@@ -130,21 +134,34 @@ const Refresh = styled.div`
 const App = () => {
   const [currentTheme, setCurrentTheme] = useState('light');
 
+  // 定義會使用到的資料狀態
+  const [currentWeather, setCurrentWeather] = useState({
+    locationName: '彰化市',
+    description: '多雲時晴',
+    windSpeed: 1.1,
+    temperature: 22.9,
+    rainPossibility: 48.3,
+    observationTime: '2022-12-16 15:15:00',
+  });
+
   return(
     <ThemeProvider theme={theme[currentTheme]}>
     <Container>
       <WeatherCard>
-        <Location >台北市</Location>
-        <Description>多雲時晴</Description>
+        <Location>{currentWeather.locationName}</Location>
+        <Description>{currentWeather.description}</Description>
         <CurrentWeather>
           <Temperature>
-            23 <Celsius>°C</Celsius>
+          {Math.round(currentWeather.temperature)} <Celsius>°C</Celsius>
           </Temperature>
           <DayCloudy />
         </CurrentWeather>
-        <AirFlow><AirFlowIcon /> 23 m/h </AirFlow>
-        <Rain><RainIcon /> 48% </Rain>
-        <Refresh> 最後觀測時間：上午 12:03 <RefreshIcon /></Refresh>
+        <AirFlow><AirFlowIcon /> {currentWeather.windSpeed} m/h </AirFlow>
+        <Rain><RainIcon /> {currentWeather.rainPossibility}% </Rain>
+        <Refresh> 最後觀測時間：{new Intl.DateTimeFormat('zh-TW', {
+                                  hour: 'numeric',
+                                  minute: 'numeric',
+                               }).format(dayjs(currentWeather.observationTime))} <RefreshIcon /></Refresh>
       </WeatherCard>
     </Container>
     </ThemeProvider>
