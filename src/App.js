@@ -131,8 +131,41 @@ const Refresh = styled.div`
   }
 `;
 
+//api
+const AUTHORIZATION_KEY = 'CWB-F3A8D989-A19B-43F5-8FF5-09EC5C6B8FF7';
+const LOCATION_NAME = '彰師大'; // STEP 1：定義 LOCATION_NAME
+
 const App = () => {
   const [currentTheme, setCurrentTheme] = useState('light');
+
+  // STEP 2：將 AUTHORIZATION_KEY 和 LOCATION_NAME 帶入 API 請求中
+  const handleClick = () => {
+    fetch(
+      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
+    )
+    .then((response) => response.json())
+    .then((data) => {
+      const locationData = data.records.location[0]; // STEP 1：取出資料
+      const weatherElements = locationData.weatherElement.reduce((neededElements, item) => {
+        if (['WDSD', 'TEMP'].includes(item.elementName)) {
+          neededElements[item.elementName] = item.elementValue;
+        }
+        return neededElements;
+      },
+      {}
+    ); // STEP 2：過濾資料
+
+    // STEP 3：更新 React 資料狀態
+    setCurrentWeather({
+      observationTime: locationData.time.obsTime,
+      locationName: locationData.locationName,
+      temperature: weatherElements.TEMP,
+      windSpeed: weatherElements.WDSD,
+      description: '多雲時晴',
+      rainPossibility: 60,
+      });
+    });
+  };
 
   // 定義會使用到的資料狀態
   const [currentWeather, setCurrentWeather] = useState({
@@ -158,7 +191,7 @@ const App = () => {
         </CurrentWeather>
         <AirFlow><AirFlowIcon /> {currentWeather.windSpeed} m/h </AirFlow>
         <Rain><RainIcon /> {currentWeather.rainPossibility}% </Rain>
-        <Refresh> 最後觀測時間：{new Intl.DateTimeFormat('zh-TW', {
+        <Refresh onClick={handleClick}> 最後觀測時間：{new Intl.DateTimeFormat('zh-TW', {
                                   hour: 'numeric',
                                   minute: 'numeric',
                                }).format(dayjs(currentWeather.observationTime))} <RefreshIcon /></Refresh>
