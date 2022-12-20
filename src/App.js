@@ -4,13 +4,14 @@ import styled from '@emotion/styled';
 
 // ThemeProvider 跟 useState
 import { ThemeProvider } from '@emotion/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // 載入圖示
 import { ReactComponent as DayCloudyIcon } from './images/day-cloudy.svg';
 import { ReactComponent as AirFlowIcon } from './images/airFlow.svg';
 import { ReactComponent as RainIcon } from './images/rain.svg';
 import { ReactComponent as RefreshIcon } from './images/refresh.svg';
+import { ReactComponent as LoadingIcon } from './images/loading.svg';
 
 //跨瀏覽器處理工具(時間格式)
 import dayjs from 'dayjs';
@@ -128,6 +129,17 @@ const Refresh = styled.div`
     width: 15px;
     height: 15px;
     cursor: pointer;
+    /* 使用 rotate 動畫效果 */
+    animation: rotate infinite 1.5s linear;
+    animation-duration: ${({ isLoading }) => (isLoading ? '1.5s' : '0s')};
+  }
+  @keyframes rotate {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
   }
 `;
 
@@ -136,10 +148,35 @@ const AUTHORIZATION_KEY = 'CWB-F3A8D989-A19B-43F5-8FF5-09EC5C6B8FF7';
 const LOCATION_NAME = '彰師大'; // STEP 1：定義 LOCATION_NAME
 
 const App = () => {
+  console.log('invoke function component'); // 元件一開始加入 console.log
+  
   const [currentTheme, setCurrentTheme] = useState('light');
+  
+  // 定義會使用到的資料狀態
+  const [currentWeather, setCurrentWeather] = useState({
+    locationName: '彰化市',
+    description: '多雲時晴',
+    windSpeed: 1.1,
+    temperature: 22.9,
+    rainPossibility: 48.3,
+    observationTime: '2022-12-16 15:15:00',
+    isLoading: true, // 多一個名為 isLoading 的狀態
+  });
 
+  // 加入 useEffect 方法，畫面render完即更新
+  useEffect(() => {
+    // useEffect 中 console.log
+    console.log('execute function in useEffect');
+    fetchCurrentWeather();
+  }, []); //空陣列讓此函示只執行一次
+  
   // STEP 2：將 AUTHORIZATION_KEY 和 LOCATION_NAME 帶入 API 請求中
-  const handleClick = () => {
+  const fetchCurrentWeather = () => {
+    setCurrentWeather((prevState) => ({
+      ...prevState,
+      isLoading:true, //點擊重新整理時，再次將 isLoading 改為 true
+    }));
+
     fetch(
       `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
     )
@@ -163,23 +200,15 @@ const App = () => {
       windSpeed: weatherElements.WDSD,
       description: '多雲時晴',
       rainPossibility: 60,
+      isLoading: false, // 資料拉取完後，把 isLoading 設為 false
       });
     });
   };
 
-  // 定義會使用到的資料狀態
-  const [currentWeather, setCurrentWeather] = useState({
-    locationName: '彰化市',
-    description: '多雲時晴',
-    windSpeed: 1.1,
-    temperature: 22.9,
-    rainPossibility: 48.3,
-    observationTime: '2022-12-16 15:15:00',
-  });
-
   return(
     <ThemeProvider theme={theme[currentTheme]}>
     <Container>
+      {console.log('render, isLoading: ', currentWeather.isLoading)}
       <WeatherCard>
         <Location>{currentWeather.locationName}</Location>
         <Description>{currentWeather.description}</Description>
@@ -191,10 +220,10 @@ const App = () => {
         </CurrentWeather>
         <AirFlow><AirFlowIcon /> {currentWeather.windSpeed} m/h </AirFlow>
         <Rain><RainIcon /> {currentWeather.rainPossibility}% </Rain>
-        <Refresh onClick={handleClick}> 最後觀測時間：{new Intl.DateTimeFormat('zh-TW', {
+        <Refresh onClick={fetchCurrentWeather} isLoading={currentWeather.isLoading}> 最後觀測時間：{new Intl.DateTimeFormat('zh-TW', {
                                   hour: 'numeric',
                                   minute: 'numeric',
-                               }).format(dayjs(currentWeather.observationTime))} <RefreshIcon /></Refresh>
+                               }).format(dayjs(currentWeather.observationTime))} {currentWeather.isLoading ? <LoadingIcon /> : <RefreshIcon />}</Refresh>
       </WeatherCard>
     </Container>
     </ThemeProvider>
