@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 
 // ThemeProvider 跟 useState
 import { ThemeProvider } from '@emotion/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 // 載入圖示
 import { ReactComponent as DayCloudyIcon } from './images/day-cloudy.svg';
@@ -222,31 +222,33 @@ const App = () => {
     isLoading: true,
   });
 
+  const fetchData = useCallback(async () => {
+    // 在開始拉取資料前，先把 isLoading 的狀態改成 true
+    setWeatherElement((prevState) => ({
+      ...prevState,
+      isLoading: true,
+    }));
+
+    // STEP 2：使用 Promise.all 搭配 await 等待兩個 API 都取得回應後才繼續
+    // 直接透過陣列的解構賦值來取出 Promise.all 回傳的資料
+    const [currentWeather, weatherForecast] = await Promise.all([
+      fetchCurrentWeather(),
+      fetchWeatherForecast(),
+    ]);
+    // 把取得的資料透過物件的解構賦值放入
+    setWeatherElement({
+      ...currentWeather,
+      ...weatherForecast,
+      isLoading: false,
+    });
+  }, []);
+
   // 加入 useEffect 方法，畫面render完即更新
   useEffect(() => {
-    const fetchData = async () => {
-      // 在開始拉取資料前，先把 isLoading 的狀態改成 true
-      setWeatherElement((prevState) => ({
-        ...prevState,
-        isLoading: true,
-      }));
-      // STEP 2：使用 Promise.all 搭配 await 等待兩個 API 都取得回應後才繼續
-      // 直接透過陣列的解構賦值來取出 Promise.all 回傳的資料
-      const [currentWeather, weatherForecast] = await Promise.all([
-        fetchCurrentWeather(),
-        fetchWeatherForecast(),
-      ]);
-      // 把取得的資料透過物件的解構賦值放入
-      setWeatherElement({
-        ...currentWeather,
-        ...weatherForecast,
-        isLoading: false,
-      });
-    };
-
+    console.log('execute function in useEffect');
     // STEP 4：再 useEffect 中呼叫 fetchData 方法
     fetchData();
-  }, []); //空陣列讓此函示只執行一次
+  }, [fetchData]); //空陣列讓此函示只執行一次
   
 
   //用解構賦值讓版面更乾淨
@@ -277,7 +279,7 @@ const App = () => {
         </CurrentWeather>
         <AirFlow><AirFlowIcon /> {windSpeed} m/h </AirFlow>
         <Rain><RainIcon /> {rainPossibility}% </Rain>
-        <Refresh onClick={() => {fetchCurrentWeather(); fetchWeatherForecast();}} isLoading={isLoading}>
+        <Refresh onClick={fetchData} isLoading={isLoading}>
           {station}站最後觀測時間：{new Intl.DateTimeFormat('zh-TW', {hour: 'numeric', minute: 'numeric',}).format(dayjs(observationTime))}
           {isLoading ? <LoadingIcon /> : <RefreshIcon />}
         </Refresh>
