@@ -1,11 +1,10 @@
-// ./src/App.js
-import React from 'react';
 import styled from '@emotion/styled';
 import WeatherIcon from './components/WeatherIcon';
+import { getMoment } from './utils/helper';
 
 // ThemeProvider 跟 useState
 import { ThemeProvider } from '@emotion/react';
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 // 載入圖示
 import { ReactComponent as AirFlowIcon } from './images/airFlow.svg';
@@ -218,6 +217,8 @@ const App = () => {
     isLoading: true,
   });
 
+  const moment = getMoment(LOCATION_NAME_FORECAST);
+
   const fetchData = useCallback(async () => {
     // 在開始拉取資料前，先把 isLoading 的狀態改成 true
     setWeatherElement((prevState) => ({
@@ -258,6 +259,7 @@ const App = () => {
     comfortability,
     station,
     isLoading,
+    weatherCode,
   } = weatherElement;
 
   return(
@@ -271,7 +273,7 @@ const App = () => {
           <Temperature>
           {Math.round(temperature)} <Celsius>°C</Celsius>
           </Temperature>
-          <WeatherIcon />
+          <WeatherIcon weatherCode={weatherCode} moment={moment} />
         </CurrentWeather>
         <AirFlow><AirFlowIcon /> {windSpeed} m/h </AirFlow>
         <Rain><RainIcon /> {rainPossibility}% </Rain>

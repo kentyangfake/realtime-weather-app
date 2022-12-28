@@ -1,7 +1,6 @@
-import React from 'react';
 import styled from '@emotion/styled';
+import React, { useMemo } from 'react';
 // STEP 1：留意載入 SVG 圖檔的路徑
-import { ReactComponent as DayCloudyIcon } from './../images/day-cloudy.svg';
 import { ReactComponent as DayThunderstorm } from './../images/day-thunderstorm.svg';
 import { ReactComponent as DayClear } from './../images/day-clear.svg';
 import { ReactComponent as DayCloudyFog } from './../images/day-cloudy-fog.svg';
@@ -67,16 +66,11 @@ const weatherCode2Type = (weatherCode) => {
     return weatherType;
 };
 
-// 假設從 API 取得的天氣代碼是 1
-const weatherCode = 1;
-console.log(weatherCode2Type(weatherCode)); // isClear
+const WeatherIcon = ({weatherCode, moment}) => {
+  const weatherType = useMemo(() => weatherCode2Type(weatherCode),[]); // 將天氣代碼轉成天氣型態
+  
+  const weatherIcon = weatherIcons[moment][weatherType]; // 根據天氣型態和 moment 取得對應的圖示
+  return <IconContainer>{weatherIcon}</IconContainer>;
+};
 
-const WeatherIcon = () => {
-    return (
-      <IconContainer>
-        <DayCloudyIcon />
-      </IconContainer>
-    );
-  };
-
-  export default WeatherIcon;
+export default WeatherIcon;
