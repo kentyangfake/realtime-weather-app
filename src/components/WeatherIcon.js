@@ -67,7 +67,7 @@ const weatherCode2Type = (weatherCode) => {
 };
 
 const WeatherIcon = ({weatherCode, moment}) => {
-  const weatherType = useMemo(() => weatherCode2Type(weatherCode),[]); // 將天氣代碼轉成天氣型態
+  const weatherType = useMemo(() => weatherCode2Type(weatherCode),[weatherCode]); // 將天氣代碼轉成天氣型態
   
   const weatherIcon = weatherIcons[moment][weatherType]; // 根據天氣型態和 moment 取得對應的圖示
   return <IconContainer>{weatherIcon}</IconContainer>;

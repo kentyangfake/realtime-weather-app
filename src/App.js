@@ -4,7 +4,7 @@ import { getMoment } from './utils/helper';
 
 // ThemeProvider 跟 useState
 import { ThemeProvider } from '@emotion/react';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 // 載入圖示
 import { ReactComponent as AirFlowIcon } from './images/airFlow.svg';
@@ -217,7 +217,11 @@ const App = () => {
     isLoading: true,
   });
 
-  const moment = getMoment(LOCATION_NAME_FORECAST);
+  const moment = useMemo(() => getMoment(LOCATION_NAME_FORECAST), []);
+  
+  useEffect(() => {
+    setCurrentTheme(moment === 'day' ? 'light' : 'dark');
+  }, [moment]);
 
   const fetchData = useCallback(async () => {
     // 在開始拉取資料前，先把 isLoading 的狀態改成 true
@@ -245,7 +249,7 @@ const App = () => {
     console.log('execute function in useEffect');
     // STEP 4：再 useEffect 中呼叫 fetchData 方法
     fetchData();
-  }, [fetchData]); //空陣列讓此函示只執行一次
+  }, [fetchData]);
   
 
   //用解構賦值讓版面更乾淨
