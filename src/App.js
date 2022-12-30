@@ -6,11 +6,6 @@ import WeatherCard from './views/WeatherCard';
 import { ThemeProvider } from '@emotion/react';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
-
-
-//跨瀏覽器處理工具(時間格式)
-import dayjs from 'dayjs';
-
 const theme = {
   light: {
     backgroundColor: '#ededed',
